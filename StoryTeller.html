@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Choose Your Story</title>
+  <style>
+    /* Import a fun, streamlined Google Font */
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap');
+
+    /* General Styles */
+    body {
+      margin: 0;
+      font-family: 'Nunito', sans-serif;
+      background-color: #f7f9fb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.8em;
+      color: #222;
+    }
+    header p {
+      font-size: 1.1em;
+      color: #555;
+    }
+    .container {
+      width: 100%;
+      max-width: 900px;
+    }
+    /* Category Selector */
+    .category-selector {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .category-selector select {
+      padding: 8px 12px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    /* Cube Tray - styled as a tray with texture, smaller area */
+    .cube-tray {
+      background: linear-gradient(145deg, #e0e0e0, #ffffff);
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      width: 180px;
+	margin: 0 auto;
+      height: 220px;
+    }
+    .cube-tray::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* Optional texture image, remove if not available */
+      background: url('images/tray-texture.png');
+      opacity: 0.1;
+      pointer-events: none;
+    }
+    .cube-tray img {
+      max-width: 130px;
+      max-height: 130px;
+      transition: transform 0.3s ease;
+      z-index: 1;
+      position: relative;
+	margin: 0 auto;
+    }
+    .cube-tray img:hover {
+      transform: scale(1.05);
+    }
+    /* Button Styles */
+    .buttons {
+      margin-top: 10px;
+    }
+    .btn {
+      padding: 8px 16px;
+      margin: 0 6px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    .btn-roll {
+      background: linear-gradient(145deg, #00bfff, #1e90ff);
+      color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .btn-roll:hover {
+      background: linear-gradient(145deg, #009ae6, #1a86e0);
+    }
+    /* Prompt Icon Button - circular with label */
+    .btn-prompt {
+      background-color: #28a745;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+      margin-left: 8px;
+    }
+    .btn-prompt:hover {
+      background-color: #23963e;
+      transform: scale(1.1);
+    }
+    .prompt-label {
+      font-size: 0.9em;
+      color: #28a745;
+      margin-left: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    /* Story Area: Only 12 slots total, auto-expanding rows */
+    .story-area {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 15px;
+      margin-bottom: 20px;
+    }
+    .story-slot {
+      width: 100%;
+      padding-top: 100%; /* Square aspect ratio */
+      position: relative;
+      background-color: #fff;
+      border: 2px dashed #bbb;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .story-slot img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) translateY(-20px);
+      opacity: 0;
+      max-width: 90%;
+      max-height: 90%;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+    .story-slot img.dropped {
+      transform: translate(-50%, -50%) translateY(0);
+      opacity: 1;
+    }
+    /* Prompt Area with Conditional Visibility */
+    .prompt-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      max-width: 600px;
+      height: 50px;
+    }
+    .prompt-area {
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      padding: 10px 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-size: 1.1em;
+      color: #333;
+      flex: 1;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .prompt-area.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Choose Your Story</h1>
+    <p>Roll a cube from any category to reveal a piece of your tale. Then uncover a prompt to guide your narrative.</p>
+  </header>
+  <div class="container">
+    <!-- Category Selector -->
+    <div class="category-selector">
+      <label for="categorySelect">Select Category:</label>
+      <select id="categorySelect">
+        <option value="Adventure">Adventure</option>
+        <option value="InsideOut">Inside Out</option>
+        <option value="RealLifeFeels">Real Life Feels</option>
+      </select>
+    </div>
+    <!-- Cube Tray -->
+    <div class="cube-tray" id="cubeTray">
+      <img id="activeCube" src="" alt="Roll a cube" style="display:none;">
+      <p id="trayText">Click "Roll" to reveal a piece of your story!</p>
+      <div class="buttons">
+        <button class="btn btn-roll" id="rollBtn">Roll</button>
+      </div>
+    </div>
+    <!-- Story Area -->
+    <div class="story-area" id="storyArea">
+      <!-- 12 slots for 12 images -->
+      <div class="story-slot" id="slot-0"></div>
+      <div class="story-slot" id="slot-1"></div>
+      <div class="story-slot" id="slot-2"></div>
+      <div class="story-slot" id="slot-3"></div>
+      <div class="story-slot" id="slot-4"></div>
+      <div class="story-slot" id="slot-5"></div>
+      <div class="story-slot" id="slot-6"></div>
+      <div class="story-slot" id="slot-7"></div>
+      <div class="story-slot" id="slot-8"></div>
+      <div class="story-slot" id="slot-9"></div>
+      <div class="story-slot" id="slot-10"></div>
+      <div class="story-slot" id="slot-11"></div>
+    </div>
+    <!-- Prompt Container -->
+    <div class="prompt-container">
+      <div class="prompt-area" id="promptArea"></div>
+      <button class="btn-prompt" id="promptToggle" style="display:none;">?</button>
+      <span class="prompt-label" id="promptLabel" style="display:none;">Click here for an idea</span>
+    </div>
+  </div>
+
+  <script>
+    // Define category data
+    const categories = {
+      Adventure: {
+        folder: "Adventure",
+        images: [
+          "adventureboy.png",
+          "bow.png",
+          "cave.png",
+          "climb.png",
+          "compass.png",
+          "fire.png",
+          "girlwithwand.png",
+          "map.png",
+          "mountain.png",
+          "sign.png",
+          "tent.png",
+          "thoughtfulcompass.png"
+        ],
+        promptMapping: {
+          "adventureboy.png": "Share a tale of a young adventurer setting out on a daring journey.",
+          "bow.png": "Tell a story of skill and precision, as your hero takes aim with a bow.",
+          "cave.png": "Describe an encounter in a mysterious cave that holds ancient secrets.",
+          "climb.png": "Narrate a moment of overcoming obstacles as you climb to new heights.",
+          "compass.png": "Share a journey of discovery guided by an unwavering compass.",
+          "fire.png": "Tell a story where the warmth of a campfire sparks unexpected adventures.",
+          "girlwithwand.png": "Imagine a magical encounter where a girl wields a wand to transform her destiny.",
+          "map.png": "Discuss an adventure that begins with a treasure map leading to unknown lands.",
+          "mountain.png": "Describe the challenge and triumph of conquering a towering mountain.",
+          "sign.png": "Share a tale of direction and fate, as a signpost guides the way forward.",
+          "tent.png": "Tell a story of camaraderie and shelter, as your hero finds refuge in a tent.",
+          "thoughtfulcompass.png": "Reflect on a journey where a thoughtful compass reveals more than just direction."
+        },
+        currentIndex: 0,
+        shuffledImages: []
+      },
+      InsideOut: {
+        folder: "InsideOut",
+        images: [
+          "bluemask.png",
+          "confused.png",
+          "flashlight.png",
+          "grateful.png",
+          "heart.png",
+          "lightningbrain.png",
+          "magnifying.png",
+          "masks.png",
+          "mirror.png",
+          "signs.png",
+          "thermometer.png",
+          "thought.png"
+        ],
+        promptMapping: {
+          "bluemask.png": "Share a moment when you had to put on a brave face.",
+          "confused.png": "Describe a time when you felt overwhelmed by your thoughts.",
+          "flashlight.png": "Tell a story about finding clarity in a dark moment.",
+          "grateful.png": "Recall a moment of gratitude that shifted your perspective.",
+          "heart.png": "Share a heartfelt experience that left a lasting impact.",
+          "lightningbrain.png": "Discuss a sudden burst of insight that changed everything.",
+          "magnifying.png": "Describe when you examined life's details and found meaning.",
+          "masks.png": "Talk about a time when you hid your true feelings.",
+          "mirror.png": "Reflect on what you discovered about yourself today.",
+          "signs.png": "Share a sign that guided you in an unexpected direction.",
+          "thermometer.png": "Explain a moment when emotions reached a boiling point.",
+          "thought.png": "Discuss a thought that led to a transformative moment."
+        },
+        currentIndex: 0,
+        shuffledImages: []
+      },
+      RealLifeFeels: {
+        folder: "RealLifeFeels",
+        images: [
+          "conflict.png",
+          "conflict2.png",
+          "hands.png",
+          "heartphones.png",
+          "mend.png",
+          "ouch.png",
+          "phnone2.png",
+          "phone.png",
+          "success.png",
+          "three.png"
+        ],
+        promptMapping: {
+          "conflict.png": "Share an experience of conflict that led to unexpected growth.",
+          "conflict2.png": "Talk about a disagreement that taught you the value of compromise.",
+          "hands.png": "Describe a moment of connection through a simple, caring gesture.",
+          "heartphones.png": "Explain how a heartfelt conversation mended a broken day.",
+          "mend.png": "Recall a time when you began to mend a fragile part of your life.",
+          "ouch.png": "Tell a story of an awkward moment that turned into a learning experience.",
+          "phnone2.png": "Discuss a surprising call or message that brightened your day.",
+          "phone.png": "Share a moment when reaching out made all the difference.",
+          "success.png": "Celebrate a time when hard work led to a gratifying success.",
+          "three.png": "Describe a situation where teamwork turned challenges into triumph."
+        },
+        currentIndex: 0,
+        shuffledImages: []
+      }
+    };
+
+    // Utility: Shuffle array using Fisher-Yates algorithm
+    function shuffle(array) {
+      let currentIndex = array.length, randomIndex;
+      while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+      }
+      return array;
+    }
+
+    // Set active category; default to "Adventure"
+    let activeCategoryName = document.getElementById("categorySelect").value;
+    let activeCategory = categories[activeCategoryName];
+
+    // Update active category when selection changes
+    document.getElementById("categorySelect").addEventListener("change", (e) => {
+      activeCategoryName = e.target.value;
+      activeCategory = categories[activeCategoryName];
+      if (activeCategory.shuffledImages.length === 0) {
+        activeCategory.shuffledImages = shuffle(activeCategory.images.slice());
+      }
+      // Reset tray display
+      activeCube.style.display = "none";
+      trayText.style.display = "block";
+    });
+
+    // Initialize shuffled arrays for each category if not already
+    for (let key in categories) {
+      if (categories.hasOwnProperty(key)) {
+        categories[key].shuffledImages = shuffle(categories[key].images.slice());
+      }
+    }
+
+    // Global index for overall story (for "Then, ..." prompt logic)
+    let globalIndex = 0;
+    const maxSlots = 12; // Allow up to 12 cubes in the story area
+
+    // DOM Elements
+    const activeCube = document.getElementById("activeCube");
+    const trayText = document.getElementById("trayText");
+    const rollBtn = document.getElementById("rollBtn");
+    const storyArea = document.getElementById("storyArea");
+    const promptArea = document.getElementById("promptArea");
+    const promptToggle = document.getElementById("promptToggle");
+    const promptLabel = document.getElementById("promptLabel");
+
+    // Toggle prompt visibility when prompt icon or label is clicked
+    promptToggle.addEventListener("click", () => {
+      promptArea.classList.toggle("visible");
+    });
+    promptLabel.addEventListener("click", () => {
+      promptArea.classList.toggle("visible");
+    });
+
+    // Get appropriate prompt text; add "Then, " for subsequent cubes in overall story
+    function getPromptText(filename, category, index) {
+      let basePrompt = category.promptMapping[filename] || "Imagine an exciting moment...";
+      return index > 0 ? "Then, " + basePrompt : basePrompt;
+    }
+
+    // Roll a cube: display the image in tray and animate drop into story slot
+    function rollCube() {
+      if (globalIndex >= maxSlots) {
+        alert("Maximum cubes reached!");
+        return;
+      }
+      if (activeCategory.currentIndex >= activeCategory.shuffledImages.length) {
+        alert("All cubes in " + activeCategoryName + " have been rolled!");
+        return;
+      }
+      const filename = activeCategory.shuffledImages[activeCategory.currentIndex];
+      const imagePath = "images/" + activeCategory.folder + "/" + filename;
+
+      // Display in cube tray
+      activeCube.src = imagePath;
+      activeCube.style.display = "block";
+      trayText.style.display = "none";
+
+      // Animate drop into corresponding story slot
+      const slot = document.getElementById("slot-" + globalIndex);
+      const imgElement = document.createElement("img");
+      imgElement.src = imagePath;
+      slot.appendChild(imgElement);
+      setTimeout(() => {
+        imgElement.classList.add("dropped");
+      }, 50);
+
+      // Update prompt text for this cube and show the prompt toggle and label
+      promptArea.textContent = getPromptText(filename, activeCategory, activeCategory.currentIndex);
+      promptToggle.style.display = "block";
+      promptLabel.style.display = "inline";
+      promptArea.classList.remove("visible");
+
+      // Increment indices for active category and overall story
+      activeCategory.currentIndex++;
+      globalIndex++;
+    }
+
+    rollBtn.addEventListener("click", rollCube);
+  </script>
+</body>
+</html>
