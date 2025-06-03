@@ -431,7 +431,8 @@
       }, 50);
 
       // Update prompt text for this cube and show the prompt toggle and label
-      promptArea.textContent = getPromptText(filename, activeCategory, activeCategory.currentIndex);
+      // Use the overall story index so prompts follow the full narrative
+      promptArea.textContent = getPromptText(filename, activeCategory, globalIndex);
       promptToggle.style.display = "block";
       promptLabel.style.display = "inline";
       promptArea.classList.remove("visible");
